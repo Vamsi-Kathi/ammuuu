@@ -5,11 +5,9 @@ import { createClient } from '@vercel/kv';
 
 const TRANSACTIONS_KEY = 'transactions';
 
-// Vercel KV is provided by Upstash, so the environment variables might have UPSTASH_ prefix.
-// We'll check for both to ensure compatibility.
 const kv = createClient({
-  url: process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN!,
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
 const initialTransactions: Transaction[] = [
@@ -52,8 +50,8 @@ const initialTransactions: Transaction[] = [
 
 
 const checkEnv = () => {
-    if (!(process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL) || !(process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN)) {
-        console.warn("Vercel KV/Upstash environment variables not set. Using initial mock data. Data will not be persisted online.");
+    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+        console.warn("Upstash environment variables not set. Using initial mock data. Data will not be persisted online.");
         return false;
     }
     return true;
