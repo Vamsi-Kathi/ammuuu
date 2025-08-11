@@ -18,11 +18,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  experimental: {
-    // This is the new line that fixes the issue.
-    // It makes the database connection keys available to the server.
-    serverComponentsExternalPackages: ['@vercel/kv'],
-  },
 };
 
 export default nextConfig;
