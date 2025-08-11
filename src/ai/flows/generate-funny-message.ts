@@ -20,7 +20,7 @@ const GenerateFunnyMessageInputSchema = z.object({
 export type GenerateFunnyMessageInput = z.infer<typeof GenerateFunnyMessageInputSchema>;
 
 const GenerateFunnyMessageOutputSchema = z.object({
-  message: z.string().describe("A single, short message that is flirty, funny, humorous, or darkly romantic."),
+  message: z.string().describe("A single, short message that is flirty, funny, and romantic, as if a boy (Pikachu) is speaking to a girl (Meruputhiga)."),
 });
 export type GenerateFunnyMessageOutput = z.infer<typeof GenerateFunnyMessageOutputSchema>;
 
@@ -32,14 +32,16 @@ const prompt = ai.definePrompt({
     name: "generateFunnyMessagePrompt",
     input: { schema: GenerateFunnyMessageInputSchema },
     output: { schema: GenerateFunnyMessageOutputSchema },
-    prompt: `You are an AI assistant that creates short, witty messages for financial transactions between two people, Meruputhiga and Pikachu. The tone should be a mix of flirty, funny, humorous, and darkly romantic.
+    prompt: `You are an AI assistant that creates short, witty messages for financial transactions between a boy, Pikachu, and a girl, Meruputhiga. The tone should be simple, efficient, flirty, and romantic, as if Pikachu is speaking directly to Meruputhiga. Each message must be new and unique.
 
-Generate a single message for the following transaction:
+Generate a single message for the following transaction, from the perspective of the app commenting on the couple's interaction:
 - Sender: {{{sender}}}
 - Amount: ₹{{{amount}}}
 - For: {{{description}}}
 
-The message should be from the perspective of the app, commenting on the transaction. It should be just one sentence.
+The message should be just one sentence.
+Example if Pikachu sends money: "Looks like Pikachu's trying to win your heart, one rupee at a time."
+Example if Meruputhiga sends money: "Meruputhiga's paying, so Pikachu, you're on dish duty tonight."
 `,
 });
 

@@ -8,11 +8,11 @@ import { TransactionHistory } from '@/components/transaction-history';
 import { SpendingAnalysis } from '@/components/spending-analysis';
 import { SettlementCard } from '@/components/settlement-card';
 import { useToast } from "@/hooks/use-toast"
-import { CheckCircle, Edit, Trash2 } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { generateFunnyMessage } from '@/ai/flows/generate-funny-message';
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { Home } from 'lucide-react';
+import { Home, Info } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -70,12 +70,10 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
     setIsClient(true);
     fetchTransactions();
     
-    // Set up polling to refresh data every 3 seconds
     const intervalId = setInterval(() => {
         fetchTransactions();
     }, 3000);
 
-    // Clean up interval on component unmount
     return () => clearInterval(intervalId);
   }, [fetchTransactions]);
 
@@ -90,7 +88,6 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
     const optimisticNewTransactions = [newTransaction, ...currentTransactions];
     setTransactions(optimisticNewTransactions);
 
-    // First, save the transaction.
     try {
       await updateTransactions(optimisticNewTransactions);
       toast({
@@ -102,19 +99,17 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
         ),
         description: "Your expense has been logged.",
       });
-       // Immediately fetch to get latest state for all clients
       await fetchTransactions(); 
     } catch (error) {
-       setTransactions(currentTransactions); // Revert optimistic update
+       setTransactions(currentTransactions);
        toast({
         title: "Error",
         description: `Failed to add transaction. Please try again.`,
         variant: 'destructive',
       });
-       return; // Stop if saving fails
+       return;
     }
 
-    // Then, separately, generate the funny message.
     try {
       const { message } = await generateFunnyMessage({
         ...newTransactionData,
@@ -123,10 +118,9 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
       toast({
         title: "P.S.",
         description: message,
+        duration: 10000,
       });
     } catch (aiError) {
-      // If the AI fails, we don't need to show an error.
-      // The main transaction was already saved.
       console.error("AI message generation failed:", aiError);
     }
   };
@@ -145,9 +139,9 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
           title: "Transaction Deleted",
           description: "The transaction has been successfully removed.",
         });
-        await fetchTransactions(); // Refresh data
+        await fetchTransactions();
       } catch (error) {
-        setTransactions(originalTransactions); // Revert
+        setTransactions(originalTransactions);
         toast({
           title: "Error",
           description: "Failed to delete transaction. Please try again.",
@@ -169,9 +163,9 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
         title: "Transaction Updated",
         description: "Your changes have been saved.",
       });
-       await fetchTransactions(); // Refresh data
+       await fetchTransactions();
     } catch (error) {
-        setTransactions(originalTransactions); // Revert
+        setTransactions(originalTransactions);
         toast({
           title: "Error",
           description: "Failed to update transaction. Please try again.",

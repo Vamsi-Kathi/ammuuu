@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Transaction } from "@/types";
@@ -91,27 +91,14 @@ const HistorySkeleton = () => (
 
 export function TransactionHistory({ transactions, currentUser, onDelete, onEdit, isLoading }: TransactionHistoryProps) {
   const [style, setStyle] = useState<'first' | 'second'>('second');
-  const [now, setNow] = useState<Date | null>(null);
-
-  useEffect(() => {
-    // Set the time on the client to avoid hydration mismatch
-    setNow(new Date());
-
-    const timer = setInterval(() => {
-      setNow(new Date());
-    }, 60000); // Update every minute
-    return () => clearInterval(timer);
-  }, []);
   
   const sortedTransactions = [...transactions].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
   const sentTransactions = sortedTransactions.filter(t => t.sender === currentUser);
   const receivedTransactions = sortedTransactions.filter(t => t.sender !== currentUser);
 
-  const canPerformAction = (timestamp: Date) => {
-    if (!now) return false; // Don't show actions until client has hydrated
-    const THREE_MINUTES = 3 * 60 * 1000;
-    return now.getTime() - timestamp.getTime() < THREE_MINUTES;
+  const canPerformAction = (sender: string) => {
+    return sender === currentUser;
   }
 
   return (
@@ -129,15 +116,16 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
               </TabsList>
             </Tabs>
         </div>
-        <CardDescription>A list of all your money transfers. Actions are available for 3 minutes.</CardDescription>
+        <CardDescription>A list of all your money transfers. Edit/Delete is always available.</CardDescription>
       </CardHeader>
+        <div className="h-[600px] md:h-[calc(100vh-22rem)]">
         {isLoading ? (
           <CardContent>
             <HistorySkeleton />
           </CardContent>
         ) : style === 'first' ? (
             <CardContent>
-                <ScrollArea className="h-[600px] pr-4">
+                <ScrollArea className="h-full pr-4">
                 {sortedTransactions.length > 0 ? (
                     <div className="space-y-4">
                     {sortedTransactions.map((transaction) => (
@@ -147,7 +135,7 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
                           sent={transaction.sender === currentUser}
                           onDelete={onDelete}
                           onEdit={onEdit}
-                          showActions={canPerformAction(transaction.timestamp) && transaction.sender === currentUser}
+                          showActions={canPerformAction(transaction.sender)}
                         />
                     ))}
                     </div>
@@ -160,8 +148,8 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
                 </ScrollArea>
             </CardContent>
         ) : ( // style === 'second'
-            <CardContent>
-                <div className="grid grid-cols-2 gap-4 h-[600px]">
+            <CardContent className="h-full">
+                <div className="grid md:grid-cols-2 gap-4 h-full">
                     <div className="flex flex-col">
                         <h3 className="text-lg font-semibold mb-2 text-center text-primary flex items-center justify-center gap-2">
                           <ArrowUp className="h-5 w-5" />
@@ -180,7 +168,7 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
                                         <p className="text-xs text-muted-foreground/70">
                                           {formatDateTime(t.timestamp)}
                                         </p>
-                                        {canPerformAction(t.timestamp) && t.sender === currentUser && (
+                                        {canPerformAction(t.sender) && (
                                             <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onEdit(t)}>
                                                 <Edit className="h-3 w-3" />
@@ -223,6 +211,7 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
                 </div>
             </CardContent>
         )}
+        </div>
     </Card>
   );
 }
