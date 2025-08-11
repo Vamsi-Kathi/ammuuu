@@ -105,7 +105,7 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
   };
 
   return (
-    <Card className="h-full">
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <div className="flex justify-between items-center">
             <CardTitle className="font-headline flex items-center gap-2">
@@ -121,13 +121,13 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
         </div>
         <CardDescription>A list of all your money transfers. You can edit or delete within 3 minutes.</CardDescription>
       </CardHeader>
-        <div className="h-[600px] md:h-[calc(100vh-22rem)]">
+        <div className="flex-grow min-h-0">
         {isLoading ? (
           <CardContent>
             <HistorySkeleton />
           </CardContent>
         ) : style === 'first' ? (
-            <CardContent>
+            <CardContent className="h-full">
                 <ScrollArea className="h-full pr-4">
                 {sortedTransactions.length > 0 ? (
                     <div className="space-y-4">
@@ -152,14 +152,14 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
             </CardContent>
         ) : ( // style === 'second'
             <CardContent className="h-full">
-                <div className="grid md:grid-cols-2 gap-x-4 h-full">
+                <div className="grid grid-cols-2 gap-x-4 h-full">
                     {/* Sent Column */}
-                    <div className="flex flex-col h-full mb-4 md:mb-0">
-                        <h3 className="text-lg font-semibold mb-2 text-center text-primary flex items-center justify-center gap-2">
+                    <div className="flex flex-col h-full min-h-0">
+                        <h3 className="text-lg font-semibold mb-2 text-center text-primary flex items-center justify-center gap-2 shrink-0">
                           <ArrowUp className="h-5 w-5" />
                           You Sent
                         </h3>
-                        <Separator />
+                        <Separator className="shrink-0"/>
                         <ScrollArea className="flex-grow mt-2 pr-2">
                             {sentTransactions.length > 0 ? (
                                 <div className="space-y-2">
@@ -189,12 +189,12 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
                         </ScrollArea>
                     </div>
                      {/* Received Column */}
-                     <div className="flex flex-col h-full">
-                        <h3 className="text-lg font-semibold mb-2 text-center text-accent flex items-center justify-center gap-2">
+                     <div className="flex flex-col h-full min-h-0">
+                        <h3 className="text-lg font-semibold mb-2 text-center text-accent flex items-center justify-center gap-2 shrink-0">
                           <ArrowDown className="h-5 w-5" />
                           You Received
                         </h3>
-                        <Separator />
+                        <Separator className="shrink-0" />
                         <ScrollArea className="flex-grow mt-2 pr-2">
                              {receivedTransactions.length > 0 ? (
                                 <div className="space-y-2">

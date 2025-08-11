@@ -212,7 +212,7 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
         <Link href="/" passHref className="absolute left-0 top-1/2 -translate-y-1/2">
            <Button variant="ghost">
             <Home className="mr-2 h-4 w-4" />
-            Change User
+            Home
            </Button>
         </Link>
         <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary">Secret</h1>

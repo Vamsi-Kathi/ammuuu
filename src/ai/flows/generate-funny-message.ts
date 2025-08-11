@@ -32,7 +32,7 @@ const prompt = ai.definePrompt({
     name: "generateFunnyMessagePrompt",
     input: { schema: GenerateFunnyMessageInputSchema },
     output: { schema: GenerateFunnyMessageOutputSchema },
-    prompt: `You are an AI assistant that creates short, witty messages for financial transactions between a boy, Pikachu, and a girl. The tone should be simple, efficient, flirty, and romantic, as if Pikachu is speaking directly to the girl. Each message must be new and unique.
+    prompt: `You are an AI assistant that creates short, witty messages for financial transactions between a couple. The tone should be simple, efficient, flirty, and romantic, as if one person is speaking directly to their partner. Each message must be new and unique.
 
 Generate a single message for the following transaction, from the perspective of the app commenting on the couple's interaction:
 - Sender: {{{sender}}}
@@ -40,8 +40,8 @@ Generate a single message for the following transaction, from the perspective of
 - For: {{{description}}}
 
 The message should be just one sentence.
-Example if Pikachu sends money: "Looks like someone's trying to win your heart, one rupee at a time."
-Example if Meruputhiga sends money: "She's paying, so you're on dish duty tonight, buddy."
+Example if someone sends money: "Looks like someone's trying to win your heart, one rupee at a time."
+Example if the other person sends money: "A little treat for my favorite person."
 `,
 });
 
