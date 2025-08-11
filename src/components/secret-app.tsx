@@ -86,35 +86,50 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
       id: crypto.randomUUID(),
       timestamp: new Date().toISOString(),
     };
-    
-    const optimisticNewTransactions = [newTransaction, ...transactions];
+
+    const currentTransactions = transactions;
+    const optimisticNewTransactions = [newTransaction, ...currentTransactions];
     setTransactions(optimisticNewTransactions);
 
+    // First, save the transaction.
     try {
       await updateTransactions(optimisticNewTransactions);
-      
-      const { message } = await generateFunnyMessage({
-        ...newTransactionData,
-        amount: newTransactionData.amount,
-      });
       toast({
         title: (
           <div className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-green-500" />
-            <span className="font-bold">Done!</span>
+            <span className="font-bold">Transaction Saved!</span>
           </div>
         ),
-        description: message,
+        description: "Your expense has been logged.",
       });
     } catch (error) {
-       setTransactions(transactions); // Revert optimistic update
+       setTransactions(currentTransactions); // Revert optimistic update
        toast({
         title: "Error",
         description: `Failed to add transaction. Please try again.`,
         variant: 'destructive',
       });
+       return; // Stop if saving fails
+    }
+
+    // Then, separately, generate the funny message.
+    try {
+      const { message } = await generateFunnyMessage({
+        ...newTransactionData,
+        amount: newTransactionData.amount,
+      });
+      toast({
+        title: "P.S.",
+        description: message,
+      });
+    } catch (aiError) {
+      // If the AI fails, we don't need to show an error.
+      // The main transaction was already saved.
+      console.error("AI message generation failed:", aiError);
     }
   };
+
 
   const handleDeleteTransaction = async () => {
     if (transactionToDelete) {

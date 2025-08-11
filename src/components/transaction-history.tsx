@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Transaction } from "@/types";
-import { formatDistanceToNow } from 'date-fns';
 import { History, ArrowUp, ArrowDown, Edit, Trash2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Separator } from '@/components/ui/separator';
@@ -31,6 +30,17 @@ const formatCurrency = (amount: number) => {
   return formatted.replace('₹', '₹ ');
 };
 
+const formatDateTime = (date: Date) => {
+    return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: true,
+    }).format(date);
+};
+
 const TransactionItem = ({ 
   transaction, 
   sent,
@@ -52,7 +62,7 @@ const TransactionItem = ({
             </div>
             <div className="flex justify-between items-center mt-1">
                 <p className="text-xs text-muted-foreground/70">
-                    {formatDistanceToNow(transaction.timestamp, { addSuffix: true })}
+                    {formatDateTime(transaction.timestamp)}
                 </p>
                 {showActions && (
                   <div className="flex gap-2">
@@ -168,7 +178,7 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
                                         </div>
                                         <p className="text-muted-foreground truncate">{t.description}</p>
                                         <p className="text-xs text-muted-foreground/70">
-                                          {formatDistanceToNow(t.timestamp, { addSuffix: true })}
+                                          {formatDateTime(t.timestamp)}
                                         </p>
                                         {canPerformAction(t.timestamp) && t.sender === currentUser && (
                                             <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -202,7 +212,7 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
                                         </div>
                                         <p className="text-muted-foreground truncate">{t.description}</p>
                                         <p className="text-xs text-muted-foreground/70">
-                                          {formatDistanceToNow(t.timestamp, { addSuffix: true })}
+                                          {formatDateTime(t.timestamp)}
                                         </p>
                                       </div>
                                     ))}
