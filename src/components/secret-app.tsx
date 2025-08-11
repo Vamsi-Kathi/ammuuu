@@ -48,7 +48,7 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchTransactions = useCallback(async () => {
-    if (!isLoading) setIsLoading(true);
+    // No need to set loading to true here, to allow for silent background refreshes
     try {
       const fetchedTransactions = await getTransactions();
       setTransactions(fetchedTransactions);
@@ -60,7 +60,9 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+        if (isLoading) {
+            setIsLoading(false);
+        }
     }
   }, [toast, isLoading]);
 
@@ -68,17 +70,14 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
     setIsClient(true);
     fetchTransactions();
     
-    // Set up polling to refresh data every 5 seconds
+    // Set up polling to refresh data every 3 seconds
     const intervalId = setInterval(() => {
-        // Only fetch if not currently loading to prevent race conditions
-        if (!isLoading) {
-            fetchTransactions();
-        }
-    }, 5000);
+        fetchTransactions();
+    }, 3000);
 
     // Clean up interval on component unmount
     return () => clearInterval(intervalId);
-  }, []); // Removed fetchTransactions and isLoading from dependency array to control polling manually
+  }, [fetchTransactions]);
 
   const handleAddTransaction = async (newTransactionData: Omit<Transaction, 'id' | 'timestamp'>) => {
     const newTransaction: Transaction = {
@@ -103,6 +102,8 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
         ),
         description: "Your expense has been logged.",
       });
+       // Immediately fetch to get latest state for all clients
+      await fetchTransactions(); 
     } catch (error) {
        setTransactions(currentTransactions); // Revert optimistic update
        toast({
@@ -144,6 +145,7 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
           title: "Transaction Deleted",
           description: "The transaction has been successfully removed.",
         });
+        await fetchTransactions(); // Refresh data
       } catch (error) {
         setTransactions(originalTransactions); // Revert
         toast({
@@ -167,6 +169,7 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
         title: "Transaction Updated",
         description: "Your changes have been saved.",
       });
+       await fetchTransactions(); // Refresh data
     } catch (error) {
         setTransactions(originalTransactions); // Revert
         toast({
