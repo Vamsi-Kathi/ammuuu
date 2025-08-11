@@ -12,7 +12,7 @@ import { CheckCircle } from 'lucide-react';
 import { generateFunnyMessage } from '@/ai/flows/generate-funny-message';
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { Home, Info } from 'lucide-react';
+import { Home } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,7 +48,6 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchTransactions = useCallback(async () => {
-    // No need to set loading to true here, to allow for silent background refreshes
     try {
       const fetchedTransactions = await getTransactions();
       setTransactions(fetchedTransactions);
@@ -72,7 +71,7 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
     
     const intervalId = setInterval(() => {
         fetchTransactions();
-    }, 3000);
+    }, 2000); // Refreshes every 2 seconds for faster updates
 
     return () => clearInterval(intervalId);
   }, [fetchTransactions]);
@@ -89,17 +88,35 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
     setTransactions(optimisticNewTransactions);
 
     try {
-      await updateTransactions(optimisticNewTransactions);
-      toast({
-        title: (
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-500" />
-            <span className="font-bold">Transaction Saved!</span>
-          </div>
-        ),
-        description: "Your expense has been logged.",
-      });
-      await fetchTransactions(); 
+        await updateTransactions(optimisticNewTransactions);
+        toast({
+            title: (
+                <div className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <span className="font-bold">Transaction Saved!</span>
+                </div>
+            ),
+            description: "Your expense has been logged.",
+            duration: 3500,
+        });
+        
+        // We run the AI message generation separately.
+        // If it fails, it won't block the success message.
+        try {
+            const { message } = await generateFunnyMessage({
+                sender: newTransaction.sender,
+                amount: newTransaction.amount,
+                description: newTransaction.description,
+            });
+            toast({
+                title: "P.S.",
+                description: message,
+                duration: 10000,
+            });
+        } catch (aiError) {
+            console.error("AI message generation failed:", aiError);
+        }
+
     } catch (error) {
        setTransactions(currentTransactions);
        toast({
@@ -107,21 +124,6 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
         description: `Failed to add transaction. Please try again.`,
         variant: 'destructive',
       });
-       return;
-    }
-
-    try {
-      const { message } = await generateFunnyMessage({
-        ...newTransactionData,
-        amount: newTransactionData.amount,
-      });
-      toast({
-        title: "P.S.",
-        description: message,
-        duration: 10000,
-      });
-    } catch (aiError) {
-      console.error("AI message generation failed:", aiError);
     }
   };
 
@@ -139,7 +141,6 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
           title: "Transaction Deleted",
           description: "The transaction has been successfully removed.",
         });
-        await fetchTransactions();
       } catch (error) {
         setTransactions(originalTransactions);
         toast({
@@ -163,7 +164,6 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
         title: "Transaction Updated",
         description: "Your changes have been saved.",
       });
-       await fetchTransactions();
     } catch (error) {
         setTransactions(originalTransactions);
         toast({

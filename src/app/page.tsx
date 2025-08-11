@@ -9,8 +9,8 @@ export default function LoginPage() {
       <Card className="w-full max-w-md mx-4">
         <CardHeader className="text-center">
           <h1 className="text-4xl md:text-5xl font-headline font-bold text-primary">Secret</h1>
-          <CardTitle className="text-2xl font-bold mt-4">Welcome Back!</CardTitle>
-          <CardDescription>Please select your name to continue.</CardDescription>
+          <CardTitle className="text-2xl font-bold mt-4">Choose Your Soul</CardTitle>
+          <CardDescription>...and continue your journey.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 p-6">
           <Link href="/user/Meruputhiga" passHref>

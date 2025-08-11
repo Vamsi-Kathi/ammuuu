@@ -96,10 +96,13 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
 
   const sentTransactions = sortedTransactions.filter(t => t.sender === currentUser);
   const receivedTransactions = sortedTransactions.filter(t => t.sender !== currentUser);
+  
+  const now = new Date();
+  const EDIT_WINDOW_MS = 3 * 60 * 1000; // 3 minutes
 
-  const canPerformAction = (sender: string) => {
-    return sender === currentUser;
-  }
+  const canPerformAction = (timestamp: Date) => {
+    return now.getTime() - timestamp.getTime() < EDIT_WINDOW_MS;
+  };
 
   return (
     <Card className="h-full">
@@ -116,7 +119,7 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
               </TabsList>
             </Tabs>
         </div>
-        <CardDescription>A list of all your money transfers. Edit/Delete is always available.</CardDescription>
+        <CardDescription>A list of all your money transfers. You can edit or delete within 3 minutes.</CardDescription>
       </CardHeader>
         <div className="h-[600px] md:h-[calc(100vh-22rem)]">
         {isLoading ? (
@@ -135,7 +138,7 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
                           sent={transaction.sender === currentUser}
                           onDelete={onDelete}
                           onEdit={onEdit}
-                          showActions={canPerformAction(transaction.sender)}
+                          showActions={canPerformAction(transaction.timestamp)}
                         />
                     ))}
                     </div>
@@ -149,14 +152,15 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
             </CardContent>
         ) : ( // style === 'second'
             <CardContent className="h-full">
-                <div className="grid md:grid-cols-2 gap-4 h-full">
-                    <div className="flex flex-col">
+                <div className="grid md:grid-cols-2 gap-x-4 h-full">
+                    {/* Sent Column */}
+                    <div className="flex flex-col h-full mb-4 md:mb-0">
                         <h3 className="text-lg font-semibold mb-2 text-center text-primary flex items-center justify-center gap-2">
                           <ArrowUp className="h-5 w-5" />
                           You Sent
                         </h3>
                         <Separator />
-                        <ScrollArea className="flex-grow pr-2 mt-2">
+                        <ScrollArea className="flex-grow mt-2 pr-2">
                             {sentTransactions.length > 0 ? (
                                 <div className="space-y-2">
                                     {sentTransactions.map(t => (
@@ -168,7 +172,7 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
                                         <p className="text-xs text-muted-foreground/70">
                                           {formatDateTime(t.timestamp)}
                                         </p>
-                                        {canPerformAction(t.sender) && (
+                                        {canPerformAction(t.timestamp) && (
                                             <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => onEdit(t)}>
                                                 <Edit className="h-3 w-3" />
@@ -184,13 +188,14 @@ export function TransactionHistory({ transactions, currentUser, onDelete, onEdit
                             ) : <p className="text-center text-muted-foreground pt-4 text-xs">Nothing sent yet.</p>}
                         </ScrollArea>
                     </div>
-                     <div className="flex flex-col">
+                     {/* Received Column */}
+                     <div className="flex flex-col h-full">
                         <h3 className="text-lg font-semibold mb-2 text-center text-accent flex items-center justify-center gap-2">
                           <ArrowDown className="h-5 w-5" />
                           You Received
                         </h3>
                         <Separator />
-                        <ScrollArea className="flex-grow pr-2 mt-2">
+                        <ScrollArea className="flex-grow mt-2 pr-2">
                              {receivedTransactions.length > 0 ? (
                                 <div className="space-y-2">
                                     {receivedTransactions.map(t => (
