@@ -89,19 +89,7 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
 
     try {
         await updateTransactions(optimisticNewTransactions);
-        toast({
-            title: (
-                <div className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                    <span className="font-bold">Transaction Saved!</span>
-                </div>
-            ),
-            description: "Your expense has been logged.",
-            duration: 3500,
-        });
         
-        // We run the AI message generation separately.
-        // If it fails, it won't block the success message.
         try {
             const { message } = await generateFunnyMessage({
                 sender: newTransaction.sender,
@@ -109,12 +97,22 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
                 description: newTransaction.description,
             });
             toast({
-                title: "P.S.",
+                title: "A little note...",
                 description: message,
                 duration: 10000,
             });
         } catch (aiError) {
-            console.error("AI message generation failed:", aiError);
+            console.error("AI message generation failed, showing fallback:", aiError);
+            toast({
+                title: (
+                    <div className="flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                        <span className="font-bold">Transaction Saved!</span>
+                    </div>
+                ),
+                description: "Your expense has been logged.",
+                duration: 3500,
+            });
         }
 
     } catch (error) {
@@ -134,6 +132,18 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
       const newTransactions = originalTransactions.filter(t => t.id !== transactionToDelete);
       setTransactions(newTransactions);
       setTransactionToDelete(null);
+      const now = new Date();
+      const transactionTimestamp = new Date(originalTransactions.find(t => t.id === transactionToDelete)!.timestamp);
+      
+      if (now.getTime() - transactionTimestamp.getTime() > 3 * 60 * 1000) {
+          toast({
+              title: "Error",
+              description: "You can no longer delete this transaction.",
+              variant: "destructive",
+          });
+          setTransactions(originalTransactions);
+          return;
+      }
 
       try {
         await updateTransactions(newTransactions);
@@ -154,6 +164,18 @@ export default function SecretApp({ currentUser }: SecretAppProps) {
 
   const handleEditTransaction = async (updatedTransaction: Transaction) => {
     const originalTransactions = transactions;
+     const now = new Date();
+    const transactionTimestamp = new Date(updatedTransaction.timestamp);
+    if (now.getTime() - transactionTimestamp.getTime() > 3 * 60 * 1000) {
+        toast({
+            title: "Error",
+            description: "You can no longer edit this transaction.",
+            variant: "destructive",
+        });
+        setTransactionToEdit(null);
+        return;
+    }
+
     const newTransactions = originalTransactions.map(t => t.id === updatedTransaction.id ? updatedTransaction : t);
     setTransactions(newTransactions);
     setTransactionToEdit(null);
@@ -335,3 +357,5 @@ function EditTransactionDialog({
     </Dialog>
   );
 }
+
+    
